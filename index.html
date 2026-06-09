@@ -961,15 +961,6 @@ function goTab(tab) {
   if (tab === 'config') { fillConfigForm(); }
 }
 
-function enableConfigTextSelectionOnFocus() {
-  document.querySelectorAll('#view-config input[type="text"], #view-config input[type="number"], #view-config input[type="email"], #view-config input[type="password"], #view-config textarea')
-    .forEach(el => {
-      el.addEventListener('focus', () => {
-        requestAnimationFrame(() => el.select());
-      });
-    });
-}
-
 let toastTimer;
 function toast(msg, kind) {
   const t = document.getElementById('toast');
