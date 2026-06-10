@@ -753,6 +753,40 @@ function boot() {
   console.log('%c◊·κ=φ⁵ ExitEngine tutor · phase ' + phase(), 'color:#818cf8;font-weight:bold');
 }
 
+// ─────── ◊ NiceAssOS fork-aware boot (L8 shell ← L2 seed hand-off) ───────
+document.addEventListener('nas:ready', () => {
+  if (!window.nas || !window.nas.isForkPresent()) return;
+  const fork = window.nas.fork;
+  // 1. propagate copy_voice to body for theme variants
+  if (fork.copy_voice) document.body.setAttribute('data-nas-voice', fork.copy_voice);
+  if (fork.verdict && fork.verdict.vertical) document.body.setAttribute('data-nas-vertical', fork.verdict.vertical);
+  // 2. personalize the tutor greeting if no name in config yet
+  if (CONFIG && !CONFIG.name && fork.handle && fork.handle !== ('fork-' + fork.konomi_pub.slice(0,8))) {
+    CONFIG.name = fork.handle;
+    try { localStorage.setItem('exitengine.config', JSON.stringify(CONFIG)); } catch(_) {}
+  }
+  // 3. if this is the user's first visit AND seed gave us a first_tutorial,
+  //    offer a 1-click jump (don't force-redirect · let them choose)
+  if (fork.first_tutorial && CONFIG._meta && CONFIG._meta.first_run) {
+    const lesson = fork.first_tutorial;
+    if (lesson !== 'start-here') {
+      const chatEl = document.querySelector('#chat-log, .chat-log, main');
+      if (chatEl && typeof pushTutor === 'function') {
+        setTimeout(() => {
+          pushTutor(`Your seed says you should start with the <b>${lesson}</b> lesson. <a href="learn/${lesson}.html" style="color:#818cf8;text-decoration:underline">Jump there now →</a>`);
+        }, 1500);
+      }
+    }
+  }
+  // 4. ingest every tutor turn into the fork's cube (talk-compact)
+  document.addEventListener('tutor:turn', (e) => {
+    if (e.detail && e.detail.text) {
+      window.nas.ingest(e.detail.text, { phase: phase(), role: e.detail.role || 'tutor' });
+    }
+  });
+  console.log('%c◊·κ=φ⁵ tutor grafted onto fork · ' + (fork.handle || fork.konomi_pub.slice(0,12)), 'color:#b8974a;font-weight:bold');
+});
+
 boot();
 </script>
 
